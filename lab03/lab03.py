@@ -1,21 +1,27 @@
 import itertools
 import math
 import random
-import csv
 
-FIRST_PRIMES_10K = []
+primes = []
 
+def get_first_primes(l):
+    _primes  = []
+    x = 2
+    while True:
+        if isprime(x):
+            _primes.append(x)
+        if len(_primes) == l:
+            return _primes
+        x+=1
+   
 
-def get_first_primes():
-    primes = []
-    with open("10000.txt") as file:
-        reader = csv.reader(file, delimiter=' ', quoting=csv.QUOTE_NONNUMERIC)
-        for row in reader:
-            for elem in row:
-                if isinstance(elem, float):
-                    primes.append(int(elem))
-    return primes
-
+def isprime(n): 
+    if n<=1: 
+        return False 
+    for i in range(2,n): 
+        if n%i==0: 
+            return False 
+    return True 
 
 def generate_random_prime(size):
     p = (random.getrandbits(size) | (1 << size)) | 1
@@ -27,7 +33,7 @@ def generate_random_prime(size):
                 p = (random.getrandbits(size) | (1 << size)) | 1
             else:
                 p += 2
-
+   
 
 def is_prime(n):
     is_prime = is_prime_simple(n, 256)
@@ -38,10 +44,9 @@ def is_prime(n):
 
 
 def is_prime_simple(number, first_primes_number):
-    for p in FIRST_PRIMES_10K[:first_primes_number]:
+    for p in primes[:first_primes_number]:
         if number % p == 0:
             return number == p
-    return None
 
 
 def is_prime_rabin_miller(number):
@@ -85,7 +90,7 @@ def get_bezout_coeffs(a, b):
 
 
 def multiplicative_inverse(a, b):
-    x, y = get_bezout_coeffs(a, b)
+    x, _ = get_bezout_coeffs(a, b)
     if x < 0:
         return b + x
     return x
@@ -121,16 +126,16 @@ def rsa_decrypt(message, key):
 
 
 if __name__ == '__main__':
-    FIRST_PRIMES_10K = get_first_primes()
-
+    primes = get_first_primes(512)
     public_key, private_key = generate_keys(256)
-    print("Public key: {}".format(public_key))
 
-    with open("data.txt") as file:
+    print(f"Public key: {public_key}")
+    print(f"Private key: {private_key}")
+
+    with open("input.txt") as file:
         text = file.read()
 
-    print("Initial text: {}".format(text))
+    print(f"Input: {text}")
     encrypted = rsa_encrypt(text, public_key)
-    print("Encrypted array: {}".format(encrypted))
-    decrypted = rsa_decrypt(encrypted, private_key)
-    print("Decrypted text: {}".format(decrypted))
+    print(f"Encrypted array: {encrypted}")
+    print(f"Decrypted: {rsa_decrypt(encrypted, private_key)}")
