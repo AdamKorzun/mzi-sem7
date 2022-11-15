@@ -1,6 +1,6 @@
 import constants
 
-def add_zeros_items(data, k):
+def add_padding(data, k):
     if len(data) <= k:
         zeros_size = k - len(data)
         data2 = [0 for i in range(zeros_size)] + data
@@ -11,10 +11,10 @@ class GOST:
         self.TABLE_S = constants.t_s
 
     def encrypt(self, data, key):
-        key = add_zeros_items(key, 256)
+        key = add_padding(key, 256)
         data = [1] + data
         m = ((len(data) // 64) + 1) * 64
-        data = add_zeros_items(data, m)
+        data = add_padding(data, m)
         res = []
         keys = [key[i:i + 32] for i in range(0, len(key), 32)]
 
@@ -42,13 +42,13 @@ class GOST:
         k_part = int("".join(str(i) for i in key), 2)
 
         l_and_key_mod = (l_part + k_part) % (2 ** 32)
-        l = add_zeros_items([int(i) for i in "{0:b}".format(l_and_key_mod)], 32)
+        l = add_padding([int(i) for i in "{0:b}".format(l_and_key_mod)], 32)
         start_s_table = [l[i:i + 4] for i in range(0, 32, 4)]
         res = []
         for i in range(8):
             s_int = int("".join(str(i) for i in start_s_table[i]), 2)
             s_int = self.TABLE_S[i][s_int]
-            start_s_table[i] = add_zeros_items([int(i) for i in "{0:b}".format(s_int)], 4)
+            start_s_table[i] = add_padding([int(i) for i in "{0:b}".format(s_int)], 4)
             res += start_s_table[i]
         funck = res[11:] + res[:11]
         for i in range(32):
@@ -57,7 +57,7 @@ class GOST:
 
     def decrypt(self, data, key):
         result_data = []
-        key = add_zeros_items(key, 256)
+        key = add_padding(key, 256)
         keys = [key[i:i + 32] for i in range(0, len(key), 32)]
 
         for i in range(0, len(data), 64):

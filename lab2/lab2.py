@@ -1,73 +1,5 @@
 import constants
 
-def add_zeros(data, k):
-    if len(data) <= k:
-        zeros_size = k - len(data)
-        data2 = [0 for i in range(zeros_size)] + data
-        return data2
-
-
-def string_to_bin_list(st):
-    bin_str = ''.join('{0:08b}'.format(ord(x), 'b') for x in st)
-    ans = [int(i) for i in bin_str]
-    return ans
-
-
-def bin_list_to_string(lst):
-    if len(lst) % 8:
-        zeros = [0 for i in range(8 - len(lst) % 8)]
-        lst = zeros + lst
-    res = ''
-    for i in range(0, len(lst), 8):
-        x = 0
-        for j in range(i, i + 8):
-            x = x * 2 + lst[j]
-        res += chr(x)
-    return res
-
-
-def create_d(key):
-    len_key = len(key)
-    if len_key <= 128:
-        return 4
-    if 128 < len_key <= 192:
-        return 6
-    if 192 < len_key <= 258:
-        return 8
-
-
-def extension_key(key):
-    d_counter = create_d(key)
-    ext_key = []
-    key = add_zeros(key, 256)
-    for i in range(0, len(key), 32):
-        ext_key.append(key[i:i + 32])
-    if d_counter == 4:
-        ext_key[4] = ext_key[0]
-        ext_key[5] = ext_key[1]
-        ext_key[6] = ext_key[2]
-        ext_key[7] = ext_key[3]
-    if d_counter == 6:
-        ext_key[6] = f_ext_key_6(ext_key[0], ext_key[1], ext_key[2])
-        ext_key[7] = f_ext_key_6(ext_key[3], ext_key[4], ext_key[5])
-    return ext_key
-
-
-def f_ext_key_6(a, b, c):
-    res = add_zeros([0], 32)
-    for i in range(32):
-        res[i] = a[i] ^ b[i] ^ c[i]
-    return res
-
-
-def create_K(list_keys):
-    K = []
-    for i in range(7):
-        for j in list_keys:
-            K.append(j)
-    return K
-
-
 class STB:
     def __init__(self):
         self.H = constants.h
@@ -77,7 +9,7 @@ class STB:
         all_tack_keys = create_K(tack_keys)
         data = [1] + data
         m = ((len(data) // 128) + 1) * 128
-        data = add_zeros(data, m)
+        data = add_padding(data, m)
         res = []
         for i in range(0, m, 128):
             res += self.encrypt_block(data[i:i + 128], all_tack_keys)
@@ -119,31 +51,31 @@ class STB:
         c = [int(i) for i in data[64:96]]
         d = [int(i) for i in data[96:]]
         for i in range(8):
-            ak = self.g(add_zeros(self.to_list(self.sum_mod(a, key[7 * (i) - 6])), 32), 5)
+            ak = self.g(add_padding(self.to_list(self.sum_mod(a, key[7 * (i) - 6])), 32), 5)
             b = self.func(b, b, ak)
             # 2
-            dk = self.g(add_zeros(self.to_list(self.sum_mod(d, key[7 * (i) - 5])), 32), 21)
+            dk = self.g(add_padding(self.to_list(self.sum_mod(d, key[7 * (i) - 5])), 32), 21)
             c = self.func(c, c, dk)
             # 3
-            bk = self.g(add_zeros(self.to_list(self.sum_mod(b, key[7 * (i) - 4])), 32), 13)
+            bk = self.g(add_padding(self.to_list(self.sum_mod(b, key[7 * (i) - 4])), 32), 13)
             diff = self.sub_mod(a, bk)
-            a = add_zeros(self.to_list(diff), 32)
+            a = add_padding(self.to_list(diff), 32)
             # 4
             sum_bck = (self.to_int(b) + self.to_int(c) + self.to_int(key[7 * (i) - 3])) % (2 ** 32)
-            bck = self.g(add_zeros(self.to_list(sum_bck), 32), 21)
-            e = self.func(add_zeros([0], 32), bck, add_zeros(self.to_list(i + 1), 32))
+            bck = self.g(add_padding(self.to_list(sum_bck), 32), 21)
+            e = self.func(add_padding([0], 32), bck, add_padding(self.to_list(i + 1), 32))
             # 5
-            b = add_zeros(self.to_list(self.sum_mod(b, e)), 32)
+            b = add_padding(self.to_list(self.sum_mod(b, e)), 32)
             # 6
-            c = add_zeros(self.to_list(self.sub_mod(c, e)), 32)
+            c = add_padding(self.to_list(self.sub_mod(c, e)), 32)
             # 7
-            ck = self.g(add_zeros(self.to_list(self.sum_mod(c, key[7 * (i) - 2])), 32), 13)
-            d = add_zeros(self.to_list(self.sum_mod(d, ck)), 32)
+            ck = self.g(add_padding(self.to_list(self.sum_mod(c, key[7 * (i) - 2])), 32), 13)
+            d = add_padding(self.to_list(self.sum_mod(d, ck)), 32)
             # 8
-            ak = self.g(add_zeros(self.to_list(self.sum_mod(a, key[7 * (i) - 1])), 32), 21)
+            ak = self.g(add_padding(self.to_list(self.sum_mod(a, key[7 * (i) - 1])), 32), 21)
             b = self.func(b, b, ak)
             # 9
-            ck1 = self.g(add_zeros(self.to_list(self.sum_mod(d, key[7 * (i)])), 32), 5)
+            ck1 = self.g(add_padding(self.to_list(self.sum_mod(d, key[7 * (i)])), 32), 5)
             c = self.func(c, c, ck1)
             a, b = b, a
             c, d = d, c
@@ -158,30 +90,30 @@ class STB:
         d = [int(i) for i in data[96:]]
         for i in reversed(range(8)):
             # 1) step 1
-            g_ak = self.g(add_zeros(self.to_list(self.sum_mod(a, key[7 * (i)])), 32), 5)
+            g_ak = self.g(add_padding(self.to_list(self.sum_mod(a, key[7 * (i)])), 32), 5)
             b = self.func(b, b, g_ak)
             # 2) step 2
-            g_dk = self.g(add_zeros(self.to_list(self.sum_mod(d, key[7 * (i) - 1])), 32), 21)
+            g_dk = self.g(add_padding(self.to_list(self.sum_mod(d, key[7 * (i) - 1])), 32), 21)
             c = self.func(c, c, g_dk)
             # 3) step 3
-            g_bk = self.g(add_zeros(self.to_list(self.sum_mod(b, key[7 * (i) - 2])), 32), 13)
-            a = add_zeros(self.to_list(self.sub_mod(a, g_bk)), 32)
+            g_bk = self.g(add_padding(self.to_list(self.sum_mod(b, key[7 * (i) - 2])), 32), 13)
+            a = add_padding(self.to_list(self.sub_mod(a, g_bk)), 32)
             # 4
             sum_bck = (self.to_int(b) + self.to_int(c) + self.to_int(key[7 * (i) - 3])) % (2 ** 32)
-            g_bck = self.g(add_zeros(self.to_list(sum_bck), 32), 21)
-            e = self.func(add_zeros([0], 32), g_bck, add_zeros(self.to_list(i + 1), 32))
+            g_bck = self.g(add_padding(self.to_list(sum_bck), 32), 21)
+            e = self.func(add_padding([0], 32), g_bck, add_padding(self.to_list(i + 1), 32))
             # 5
-            b = add_zeros(self.to_list(self.sum_mod(b, e)), 32)
+            b = add_padding(self.to_list(self.sum_mod(b, e)), 32)
             # 6
-            c = add_zeros(self.to_list(self.sub_mod(c, e)), 32)
+            c = add_padding(self.to_list(self.sub_mod(c, e)), 32)
             # 7
-            ck = self.g(add_zeros(self.to_list(self.sum_mod(c, key[7 * (i) - 4])), 32), 13)
-            d = add_zeros(self.to_list(self.sum_mod(d, ck)), 32)
+            ck = self.g(add_padding(self.to_list(self.sum_mod(c, key[7 * (i) - 4])), 32), 13)
+            d = add_padding(self.to_list(self.sum_mod(d, ck)), 32)
             # 8
-            g_ak = self.g(add_zeros(self.to_list(self.sum_mod(a, key[7 * (i) - 5])), 32), 21)
+            g_ak = self.g(add_padding(self.to_list(self.sum_mod(a, key[7 * (i) - 5])), 32), 21)
             b = self.func(b, b, g_ak)
             # 9
-            g_dk = self.g(add_zeros(self.to_list(self.sum_mod(d, key[7 * (i) - 6])), 32), 5)
+            g_dk = self.g(add_padding(self.to_list(self.sum_mod(d, key[7 * (i) - 6])), 32), 5)
             c = self.func(c, c, g_dk)
             a, b = b, a
             c, d = d, c
@@ -196,21 +128,87 @@ class STB:
             u_right = self.to_int(u_i[:4])
             u_left = self.to_int(u_i[4:])
             num = self.to_list(self.H[u_right][u_left])
-            res += add_zeros(num, 8)
+            res += add_padding(num, 8)
         func_g = res[r:] + res[:r]
         return func_g
+
+def add_padding(data, k):
+    if len(data) <= k:
+        zeros_size = k - len(data)
+        data2 = [0 for i in range(zeros_size)] + data
+        return data2
+
+def str2bin(st):
+    return [int(i) for i in ''.join('{0:08b}'.format(ord(x), 'b') for x in st)]
+
+
+
+
+def bin2str(input_list):
+    res = ''
+
+    if len(input_list) % 8:
+        padding = [0 for _ in range(8 - len(input_list) % 8)]
+        input_list = padding + input_list
+    for i in range(0, len(input_list), 8):
+        x = 0
+        for j in range(i, i + 8):
+            x = x * 2 + input_list[j]
+        res += chr(x)
+    return res
+
+
+def create_d(key):
+    len_key = len(key)
+    if len_key <= 128:
+        return 4
+    if 128 < len_key <= 192:
+        return 6
+    if 192 < len_key <= 258:
+        return 8
+
+
+def extension_key(key):
+    d_counter = create_d(key)
+    ext_key = []
+    key = add_padding(key, 256)
+    for i in range(0, len(key), 32):
+        ext_key.append(key[i:i + 32])
+    if d_counter == 4:
+        ext_key[4] = ext_key[0]
+        ext_key[5] = ext_key[1]
+        ext_key[6] = ext_key[2]
+        ext_key[7] = ext_key[3]
+    if d_counter == 6:
+        ext_key[6] = f_ext_key_6(ext_key[0], ext_key[1], ext_key[2])
+        ext_key[7] = f_ext_key_6(ext_key[3], ext_key[4], ext_key[5])
+    return ext_key
+
+
+def f_ext_key_6(a, b, c):
+    res = add_padding([0], 32)
+    for i in range(32):
+        res[i] = a[i] ^ b[i] ^ c[i]
+    return res
+
+
+def create_K(list_keys):
+    K = []
+    for i in range(7):
+        for j in list_keys:
+            K.append(j)
+    return K
+
+
 
 
 if __name__ == '__main__':
     stb = STB()
-    file = open("text.txt", "r")
-    text = file.read()
-    file.close()
+    with open('input.txt', 'r') as f:
+        text = f.read()
+
     KEY = 'SDFTasdfghjkl46778647dfghjk'
-    print('\nText to encrypt and decrypt: \n\t' + text)
-    print('\nKEY: \n\t' + KEY)
-    print('\nSimple replace mode')
-    enc = stb.encrypt_function(string_to_bin_list(text), string_to_bin_list(KEY))
-    print('\nENCRYPTED: \n\t' + bin_list_to_string(enc))
-    dec = stb.decrypt_function(enc, string_to_bin_list(KEY))
-    print('\nDECRYPTED: \n\t' + bin_list_to_string(dec) + '\n')
+    enc = stb.encrypt_function(str2bin(text), str2bin(KEY))
+    print(f'\nENCRYPTED: { bin2str(enc)}')
+    dec = stb.decrypt_function(enc, str2bin(KEY))
+    print(f'DECRYPTED: {bin2str(dec)}\n')
