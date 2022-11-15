@@ -1,1 +1,1 @@
-Task 1. DES + GOST encryption.
+Hello world!

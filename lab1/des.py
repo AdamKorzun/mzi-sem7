@@ -1,7 +1,7 @@
 from collections import Counter
 import constants
 
-def add_zeros_items(data, k):
+def add_padding(data, k):
     if len(data) <= k:
         zeros_size = k - len(data)
         data2 = [0 for i in range(zeros_size)] + data
@@ -20,17 +20,17 @@ class DES:
         self.final_IP = constants.f_ip
 
     def encrypt(self, data, key):
+        res = []
         data = [1] + data
         m = ((len(data) // 64) + 1) * 64
-        data = add_zeros_items(data, m)
-        res = []
+        data = add_padding(data, m)
         for block in range(0, m, 64):
             res += self.encrypt_64(data[block:block+64], key)
         return res
 
     def encrypt_64(self, data, key):
         len_block = 64
-        key =add_zeros_items(key, 56)
+        key =add_padding(key, 56)
         data_IP = []
         for i in range(len_block):
             data_IP.append(data[self.IP[i] - 1])
@@ -94,7 +94,7 @@ class DES:
         return res[1:]
 
     def decrypt_64(self, data, key):
-        key = add_zeros_items(key, 56)
+        key = add_padding(key, 56)
         len_n = 64
         data_IP = [data[self.IP[i] - 1] for i in range(len_n)]
         l_i = data_IP[:len_n//2]
