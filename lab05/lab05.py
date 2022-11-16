@@ -25,15 +25,15 @@ CONSTANTS = [
 ]
 
 
-def hex_to_bin(hex_number, size=32):
+def h2b(hex_number, size=32):
     return bin(hex_number)[2:].zfill(size)
 
 
-def bin_to_hex(binary_string):
+def b2h(binary_string):
     return '%0*X' % ((len(binary_string) + 3) // 4, int(binary_string, 2))
 
 
-def str_to_bin(text):
+def s2b(text):
     return ''.join(format(ord(char), 'b').zfill(8) for char in text)
 
 
@@ -61,13 +61,13 @@ def left_rotate(u, r):
     return u[r:] + u[:r]
 
 
-def chunks(string, size):
+def blocks(string, size):
     for i in range(0, len(string), size):
         yield string[i:i + size]
 
 
 def to_le(string, size=8):
-    return "".join(list(chunks(string, size))[::-1])
+    return "".join(list(blocks(string, size))[::-1])
 
 
 def md5(data):
@@ -82,14 +82,13 @@ def md5(data):
     r1, r2 = r[:32], r[len(r) - 32:]
     message += to_le(r2) + to_le(r1)
 
-    a0 = hex_to_bin(0x67452301)
-    b0 = hex_to_bin(0xefcdab89)
-    c0 = hex_to_bin(0x98badcfe)
-    d0 = hex_to_bin(0x10325476)
+    a0 = h2b(0x01234567)
+    b0 = h2b(0x89ABCDEF)
+    c0 = h2b(0xFEDCBA98)
+    d0 = h2b(0x76543210)
 
-    for chunk in chunks(message, 512):
-        M = [to_le(c) for c in chunks(chunk, 32)]
-
+    for chunk in blocks(message, 512):
+        M = [to_le(c) for c in blocks(chunk, 32)]
         A, B, C, D = a0, b0, c0, d0
 
         for i in range(64):
@@ -108,7 +107,7 @@ def md5(data):
                 F = b_xor(C, b_or(B, b_not(D)))
                 g = (7 * i) % 16
 
-            F = plus_32(plus_32(plus_32(A, F), M[g]), hex_to_bin(CONSTANTS[i]))
+            F = plus_32(plus_32(plus_32(A, F), M[g]), h2b(CONSTANTS[i]))
             A = D
             D = C
             C = B
@@ -123,15 +122,8 @@ def md5(data):
 
 
 if __name__ == "__main__":
-    text = "The quick brown fox jumps over the lazy dog"
-    result = bin_to_hex(md5(str_to_bin(text)))
-    print(f"MD5('{text}') = {result}")
-    text = "The quick brown fox jumps over the lazy dog."
-    result = bin_to_hex(md5(str_to_bin(text)))
-    print(f"MD5('{text}') = {result}")
-    text = "md5"
-    result = bin_to_hex(md5(str_to_bin(text)))
-    print(f"MD5('{text}') = {result}")
-    text = ""
-    result = bin_to_hex(md5(str_to_bin(text)))
-    print(f"MD5('{text}') = {result}")
+    text = "Hello world!"
+    result = b2h(md5(s2b(text)))
+    print(f'input: {text}')
+    print(f"MD5: {result}")
+   
