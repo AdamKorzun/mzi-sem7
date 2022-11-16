@@ -82,5 +82,5 @@ if __name__ == '__main__':
     p, g, x, y = get_keys()
     a, b = encrypt(p, g, y, text)
     res_text = decrypt(p, x, a, b)
-    print('\nEncrypted data\n' + '\na: ' + str(a) + '\nb:\n' + str(b))
-    print('\nDecrypted data\n\n' + str(res_text) + '\n')
+    print(f'\nEncrypted: \na: {str(a)}\nb: {str(b)}')
+    print(f'Decrypted: \n{str(res_text)}\n')

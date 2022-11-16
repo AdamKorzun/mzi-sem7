@@ -124,6 +124,6 @@ def md5(data):
 if __name__ == "__main__":
     text = "Hello world!"
     result = b2h(md5(s2b(text)))
-    print(f'input: {text}')
-    print(f"MD5: {result}")
+    print(f'\ninput: {text}')
+    print(f"MD5: {result}\n")
    

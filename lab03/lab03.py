@@ -66,7 +66,7 @@ def rsa_decrypt(message, key):
 if __name__ == '__main__':
     public_key, private_key = generate_keys(256)
 
-    print(f"Public key: {public_key}")
+    print(f"\nPublic key: {public_key}")
     print(f"Private key: {private_key}")
 
     with open("input.txt") as file:
@@ -75,4 +75,4 @@ if __name__ == '__main__':
     print(f"Input: {text}")
     encrypted = rsa_encrypt(text, public_key)
     print(f"Encrypted array: {encrypted}")
-    print(f"Decrypted: {rsa_decrypt(encrypted, private_key)}")
+    print(f"Decrypted: {rsa_decrypt(encrypted, private_key)}\n")
