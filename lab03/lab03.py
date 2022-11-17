@@ -42,7 +42,7 @@ def generate_keys(size):
     n = p * q
     phi = (p - 1) * (q - 1)
     while True:
-        e = random.randint(17, phi - 1)
+        e = random.randint(1, phi - 1)
         # e = 65537
         if math.gcd(e, phi) == 1:
             break

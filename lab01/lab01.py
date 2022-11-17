@@ -46,9 +46,9 @@ if __name__ == '__main__':
         data = f.read()
 
 
-    KEY1 = 'QWERTY'
+    KEY1 = 'WEQRTY'
     KEY2 = 'QWER24'
-    KEY3 = 'ASDFGHJKL123456UYTREWQ235479'
+    KEY3 = 'AFDFGHJKL123456UYTREWQ235479'
 
     K1 = string_to_bin_list(KEY1)
     K2 = string_to_bin_list(KEY2)
